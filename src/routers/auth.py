@@ -50,11 +50,11 @@ def login(response: Response,
 
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='Invalid Credentials')
+                            detail='Invalid credentials')
 
     if not verify_pw(credentials.password, user.password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='Invalid Credentials')
+                            detail='Invalid credentials')
 
     access_token, refresh_token = tokenize(user.id)
 
@@ -76,7 +76,7 @@ def logout(request:Request,
     refresh_token = request.cookies.get('refresh_token')
 
     access_payload = detokenize(access_token, 'Access', suppress=True)
-    refresh_payload = detokenize(refresh_token, 'Refresh')
+    refresh_payload = detokenize(refresh_token, 'Refresh', suppress=True)
     access_jti = access_payload.get('jti')
     refresh_jti = refresh_payload.get('jti')
 
@@ -92,6 +92,7 @@ def logout(request:Request,
     if remaining_ttl > 0:
         ban(access_jti, remaining_ttl)
 
+    response.delete_cookie(key='refresh_token', httponly=True)
     return
 
 @router.post('/refresh')

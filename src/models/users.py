@@ -3,9 +3,10 @@ from uuid import uuid7, UUID
 from datetime import datetime
 
 from sqlalchemy import func, Enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from . import Base
+from .carts import Cart
 
 class User(Base):
     __tablename__ = "users"
@@ -21,3 +22,8 @@ class User(Base):
     )
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
+
+    cart: Mapped['Cart'] = relationship(
+        'Cart',
+        passive_deletes=True
+    )

@@ -8,21 +8,21 @@ from fastapi import HTTPException, status
 from .config import settings
 
 def tokenize(user_id: UUID) -> Tuple[str, str]:
-    jti =  uuid4()
+    jti =  str(uuid4())
     current_time = datetime.now(UTC)
     access_exp = current_time + timedelta(hours=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_exp = current_time + timedelta(hours=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
     access_payload = {
         "sub": str(user_id),
-        "jti": str(jti),
+        "jti": jti,
         "exp": access_exp,
         "type": "Access"
     }
 
     refresh_payload = {
         "sub": str(user_id),
-        "jti": str(jti),
+        "jti": jti,
         "exp": refresh_exp,
         "type": "Refresh"
     }

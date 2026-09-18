@@ -6,8 +6,10 @@ from pydantic import BaseModel
 
 from .items import ItemResponse
 
-class CartResponse(BaseModel):
-    id: UUID
+class CartIN(BaseModel):
+    items: List[ItemResponse]
+
+class CartOUT(BaseModel):
     user_id: UUID
     items: List[ItemResponse]
     created_at: datetime

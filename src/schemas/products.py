@@ -7,7 +7,7 @@ from pydantic import BaseModel
 class ProductCreate(BaseModel):
     name: str
     description: str
-    categories: Set[str] | None = None
+    category: str
     price: float
     stock: int
     image_url: str | None = None
@@ -15,7 +15,7 @@ class ProductCreate(BaseModel):
 class ProductUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
-    categories: Set[str] | None = None
+    category: str | None = None
     price: float | None = None
     stock: int | None = None
     image_url: str | None = None
@@ -24,7 +24,7 @@ class ProductResponse(BaseModel):
     id: UUID
     name: str
     description: str
-    categories: Set[str]
+    category: str
     price: float
     stock: int
     image_url: str

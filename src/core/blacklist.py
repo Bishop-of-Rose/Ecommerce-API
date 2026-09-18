@@ -6,7 +6,4 @@ def ban(jti: UUID, remaining_ttl: int) -> None:
     client.set(f'{jti}', 'revoked', ex=remaining_ttl)
 
 def check(jti: UUID) -> bool:
-    if client.get(f'{jti}'):
-        return True
-    else:
-        return False
+    return client.get(f'{jti}') is not None

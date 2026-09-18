@@ -23,30 +23,25 @@ def update_user(edit: UserUpdate,
                 current_user: User = Depends(get_current_user),
                 session: Session = Depends(get_session)):
     edit = edit.model_dump()
-    for key, value in edit.items():
-        if edit.get(key) is None:
-            edit[key] = getattr(current_user, key)
+    for key in edit.keys():
+        if edit.get(key) is not None:
+             setattr(current_user, key, edit[key])
 
-    stmt = update(User).where(User.id == current_user.id).values(**edit)
     try:
-        session.execute(stmt)
         session.commit()
         session.refresh(current_user)
 
     except IntegrityError as e:
         if isinstance(e.orig, UniqueViolation):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail='User with that email already exists'
-            )
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                detail='User with that email already exists')
 
     return current_user
 
 @router.delete('', status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(current_user: User = Depends(get_current_user),
                 session: Session = Depends(get_session)):
-    stmt = delete(User).where(User.id == current_user.id)
-    session.execute(stmt)
+    session.delete(current_user)
     session.commit()
 
     return

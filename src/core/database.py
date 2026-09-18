@@ -13,4 +13,7 @@ session = sessionmaker(bind=engine)
 
 def get_session() -> Generator[Session]:
     db = session()
-    yield db
+    try:
+        yield db
+    finally:
+        db.close()

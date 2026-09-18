@@ -9,6 +9,7 @@ class ItemCreate(BaseModel):
     quantity: int
 
 class ItemUpdate(BaseModel):
+    product_id: UUID
     quantity: int
 
 class ItemResponse(BaseModel):

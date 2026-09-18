@@ -20,7 +20,7 @@ router = APIRouter(
 def query_products(current_user: User = Depends(get_current_user),
                    session: Session = Depends(get_session),
                    name: str = '', description: str = '',
-                   categories: Set[str] = None,
+                   category: str = None,
                    price_above: float = None, price_below: float = None,
                    page: datetime = None, limit: int = 20):
     stmt = (select(Product)
@@ -29,8 +29,8 @@ def query_products(current_user: User = Depends(get_current_user),
             .order_by(Product.created_at.desc())
             .limit(limit))
 
-    if page is not None:
-        stmt = stmt.where(Product.created_at < page)
+    if category is not None:
+        stmt = stmt.where(Product.category == category)
 
     if price_above is not None:
         stmt = stmt.where(Product.price < price_above)
@@ -38,8 +38,8 @@ def query_products(current_user: User = Depends(get_current_user),
     if price_below is not None:
         stmt = stmt.where(Product.price > price_below)
 
-    if categories is not None:
-        stmt = stmt.where(Product.categories.contains(categories))
+    if page is not None:
+        stmt = stmt.where(Product.created_at < page)
 
     products = session.scalars(stmt).all()
 

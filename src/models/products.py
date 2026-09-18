@@ -13,7 +13,7 @@ class Product(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid7)
     name: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(nullable=False)
-    categories: Mapped[Set[str]] = mapped_column(ARRAY(String), default=set)
+    category: Mapped[str] =  mapped_column(nullable=False)
     price: Mapped[float] = mapped_column(nullable=False)
     stock: Mapped[int] = mapped_column(nullable=False)
     image_url: Mapped[str] = mapped_column(default=str)

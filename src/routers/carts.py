@@ -11,34 +11,29 @@ router = APIRouter(
 )
 
 @router.get('', response_model=CartOUT)
-def get_cart(current_user: User = Depends(get_current_customer),
-             session: Session = Depends(get_session)):
-    if current_user.cart is None:
-        cart = Cart(user_id=current_user.id)
-        session.add(cart)
-        session.commit()
-
+def get_cart(current_user: User = Depends(get_current_customer)):
     return current_user.cart
 
 @router.put('', response_model=CartOUT)
 def save_cart(edit: CartIN,
               current_user: User = Depends(get_current_customer),
               session: Session = Depends(get_session)):
-    if current_user.cart is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail='Cart not found')
-
     items = [Item(**item.model_dump()) for item in edit.items]
     current_user.cart.items = items
 
     session.commit()
+    session.refresh(current_user.cart)
     return current_user.cart
+
+@router.delete('')
+def empty_cart(current_user: User = Depends(get_current_customer),
+               session: Session = Depends(get_session)):
+    current_user.cart.items = []
+
+    session.commit()
+    return
 
 @router.head('/checkout', response_model=CartOUT)
 def checkout_cart(current_user: User = Depends(get_current_customer),
                   session: Session = Depends(get_session)):
-    if current_user.cart is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail='Cart not found')
-
     pass

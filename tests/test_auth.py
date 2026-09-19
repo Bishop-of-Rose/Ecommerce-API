@@ -71,6 +71,18 @@ def test_login_failure_invalid_credentials(client):
     assert res.status_code == 400
     assert res.json().get('detail') == 'Invalid credentials'
 
+def test_auth_failure_already_logged_out(client, logged_out):
+    access_token, refresh_token = logged_out
+
+    res = client.post(
+        '/auth/logout',
+        headers={'Authorization': 'Bearer ' + access_token},
+        cookies={'refresh_token': refresh_token}
+    )
+
+    assert res.status_code == 400
+    assert res.json()['detail'] == 'Already logged out'
+
 def test_auth_failure_missing_access_token(client):
     res = client.post('/auth/logout')
     assert res.status_code == 401
@@ -84,6 +96,25 @@ def test_auth_failure_missing_refresh_token(client, random_unmatched_tokens):
     )
     assert res.status_code == 401
     assert res.json().get('detail') == 'Refresh token is missing'
+
+def test_auth_failure_expired_access_token(client, random_expired_tokens):
+    access_token = random_expired_tokens[0]
+    res = client.get(
+        '/users/whoami',
+        headers={'Authorization': 'Bearer ' + access_token}
+    )
+    assert res.status_code == 401
+    assert res.json()['detail'] == 'Access token has expired'
+
+def test_auth_failure_expired_refresh_token(client, random_expired_tokens):
+    access_token, refresh_token = random_expired_tokens
+    res = client.post(
+        '/auth/refresh',
+        headers={'Authorization': 'Bearer ' + access_token},
+        cookies={'refresh_token': refresh_token}
+    )
+    assert res.status_code == 401
+    assert res.json()['detail'] == 'Refresh token has expired'
 
 def test_auth_failure_unmatched_tokens(client, random_unmatched_tokens):
     access_token, refresh_token = random_unmatched_tokens

@@ -20,14 +20,11 @@ router = APIRouter(
 def add_items(items: List[ItemCreate],
               current_user: User = Depends(get_current_customer),
               session: Session = Depends(get_session)):
-    if current_user.cart is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail='Cart not found')
-
     items = [Item(**item.model_dump(), cart_id=current_user.cart.id) for item in items]
     try:
         current_user.cart.items.append(*items)
         session.commit()
+        session.refresh(current_user.cart)
 
     except IntegrityError as e:
         if isinstance(e.orig, UniqueViolation):

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from psycopg2.errors import UniqueViolation
 
-from ..models import User
+from ..models import User, Cart
 from ..schemas import UserCreate, UserResponse
 from ..core.blacklist import check, ban
 from ..core.config import settings
@@ -29,8 +29,10 @@ def register(user: UserCreate,
 
     try:
         session.add(user)
+        session.add(Cart(user_id=user.id))
         session.commit()
         session.refresh(user)
+
 
     except IntegrityError as e:
         if isinstance(e.orig, UniqueViolation):

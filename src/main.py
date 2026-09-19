@@ -1,26 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-from starlette.responses import JSONResponse
 
 from .routers import auth, users, carts, items, orders, products
+from .core.limiter import limiter, RateLimitExceeded, rate_limit_exceeded_handler
 
 app = FastAPI()
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=['50/minute']
-)
 
 app.state.limiter = limiter
-@app.exception_handler(RateLimitExceeded)
-def rate_limit_exceeded_handler(exc: RateLimitExceeded):
-    return JSONResponse(
-        status_code=429,
-        headers={"Retry-After": exc.detail},
-        content={"detail": "Rate limit exceeded"}
-    )
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

@@ -38,7 +38,7 @@ def update_user(edit: UserUpdate,
 
     return current_user
 
-@router.delete('', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('')
 def delete_user(current_user: User = Depends(get_current_user),
                 session: Session = Depends(get_session)):
     session.delete(current_user)

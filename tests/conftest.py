@@ -63,16 +63,16 @@ def client(session):
 def registered_user(client):
     data = {
         'email': 'registeredemail123@gmail.com',
-        'password': 'testpassword',
-        'first_name': 'testfirstname',
-        'last_name': 'testlastname'
+        'password': 'password',
+        'first_name': 'firstname',
+        'last_name': 'lastname'
     }
 
     res = client.post('/auth/register', json=data)
     return data
 
 @pytest.fixture
-def logged_in(registered_user, client):
+def logged_in(client, registered_user):
     data = {
         'username': registered_user['email'],
         'password': registered_user['password']
@@ -81,6 +81,42 @@ def logged_in(registered_user, client):
     res = client.post('/auth/login', data=data)
     access_token = res.json()['access_token']
     refresh_token = res.cookies.get('refresh_token')
+
+    return access_token, refresh_token
+
+@pytest.fixture
+def logged_out(client, logged_in):
+    access_token, refresh_token = logged_in
+
+    res = client.post(
+        '/auth/logout',
+        headers={'Authorization': 'Bearer ' + access_token},
+        cookies={'refresh_token': refresh_token}
+    )
+
+    return logged_in
+
+@pytest.fixture
+def random_expired_tokens():
+    sub = str(uuid7())
+    current_time = datetime.now(UTC)
+
+    access_payload = {
+        'sub': sub,
+        'jti': str(uuid4()),
+        'exp': current_time,
+        'type': 'Access'
+    }
+
+    refresh_payload = {
+        'sub': sub,
+        'jti': str(uuid4()),
+        'exp': current_time,
+        'type': 'Refresh'
+    }
+
+    access_token = jwt.encode(access_payload, settings.SECRET_KEY, settings.ALGORITHM)
+    refresh_token = jwt.encode(refresh_payload, settings.SECRET_KEY, settings.ALGORITHM)
 
     return access_token, refresh_token
 

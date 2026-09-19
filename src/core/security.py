@@ -8,20 +8,21 @@ from fastapi import HTTPException, status
 from .config import settings
 
 def tokenize(user_id: UUID) -> Tuple[str, str]:
+    sub = str(user_id)
     jti =  str(uuid4())
     current_time = datetime.now(UTC)
     access_exp = current_time + timedelta(hours=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_exp = current_time + timedelta(hours=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
     access_payload = {
-        "sub": str(user_id),
+        "sub": sub,
         "jti": jti,
         "exp": access_exp,
         "type": "Access"
     }
 
     refresh_payload = {
-        "sub": str(user_id),
+        "sub": sub,
         "jti": jti,
         "exp": refresh_exp,
         "type": "Refresh"
@@ -44,14 +45,14 @@ def detokenize(token: str, token_type: str, suppress: bool = False) -> Dict[str,
                                 detail=f'Invalid {token_type} token')
 
     except ExpiredSignatureError:
-        if suppress:
-            payload = decode(token, settings.SECRET_KEY, settings.ALGORITHM, options={'verify_exp': False})
-            if payload.get('type') != token_type:
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                    detail=f'Invalid {token_type} token')
-
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+        if not suppress:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=f'{token_type} token has expired')
+
+        payload = decode(token, settings.SECRET_KEY, settings.ALGORITHM, options={'verify_exp': False})
+        if payload.get('type') != token_type:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail=f'Invalid {token_type} token')
 
     except InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
